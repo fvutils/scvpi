@@ -1,0 +1,343 @@
+/*
+ * vpi.hpp
+ *
+ *  Created on: Nov 14, 2020
+ *      Author: mballance
+ */
+
+#pragma once
+#include "vpi_user_int.h"
+#include <stdio.h>
+#include "ScVpiCallbackBase.h"
+#include "scvpi.h"
+
+using namespace scvpi;
+
+#define EN_DEBUG_VPI
+
+#ifdef EN_DEBUG_VPI
+#define DEBUG_ENTER(fmt, ...) \
+	fprintf(stdout, "--> VPI: "); \
+	fprintf(stdout, fmt, #__VA_ARGS__); \
+	fprintf(stdout, "\n");
+#define DEBUG_LEAVE(fmt, ...) \
+	fprintf(stdout, "<-- VPI: "); \
+	fprintf(stdout, fmt, #__VA_ARGS__); \
+	fprintf(stdout, "\n");
+#define DEBUG(fmt, ...) \
+	fprintf(stdout, "VPI: "); \
+	fprintf(stdout, fmt, #__VA_ARGS__); \
+	fprintf(stdout, "\n");
+#else
+#define DEBUG_ENTER(fmt, ...)
+#define DEBUG_LEAVE(fmt, ...)
+#define DEBUG(fmt, ...)
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+vpiHandle vpi_register_cb(p_cb_data cb_data_p) {
+	DEBUG_ENTER("vpi_register_cb");
+	vpiHandle ret = 0;
+	switch (cb_data_p->reason) {
+	case cbAtStartOfSimTime: {
+		DEBUG("cbAtStartOfSimTime");
+	} break;
+	case cbEndOfCompile: {
+		DEBUG("cbEndOfCompile");
+	} break;
+	case cbStartOfSimulation: {
+		DEBUG("cbStartOfSimulation");
+		ScVpiCallbackBase *cb = new ScVpiCallbackBase(cb_data_p);
+		ScVpi::inst()->add_start_of_sim_cb(cb);
+
+		ret = reinterpret_cast<vpiHandle>(cb);
+	} break;
+	case cbEndOfSimulation: {
+		ScVpiCallbackBase *cb = new ScVpiCallbackBase(cb_data_p);
+		ScVpi::inst()->add_end_of_sim_cb(cb);
+		ret = reinterpret_cast<vpiHandle>(cb);
+	} break;
+	default:
+		DEBUG("Unknown: 0x%08x", cb_data_p->reason);
+		break;
+	}
+
+	DEBUG_LEAVE("vpi_register_cb");
+	return ret;
+}
+
+PLI_INT32 vpi_remove_cb(vpiHandle cb_obj) {
+	DEBUG_ENTER("vpi_remove_cb");
+	DEBUG_LEAVE("vpi_remove_cb");
+	return -1;
+}
+
+void vpi_get_cb_info(
+		vpiHandle object,
+        p_cb_data cb_data_p) {
+
+}
+
+vpiHandle vpi_register_systf(p_vpi_systf_data systf_data_p) {
+	return 0;
+}
+
+void vpi_get_systf_info(
+		vpiHandle object,
+        p_vpi_systf_data systf_data_p) {
+
+}
+
+/* for obtaining handles */
+
+vpiHandle vpi_handle_by_name(
+		PLI_BYTE8    *name,
+        vpiHandle    scope) {
+	return 0;
+}
+
+vpiHandle vpi_handle_by_index(
+		vpiHandle    object,
+        PLI_INT32    index) {
+	return 0;
+}
+
+/* for traversing relationships */
+
+vpiHandle vpi_handle(
+		PLI_INT32   type,
+        vpiHandle   refHandle) {
+	DEBUG_ENTER("vpi_handle");
+	DEBUG_LEAVE("vpi_handle");
+	return 0;
+}
+
+vpiHandle vpi_handle_multi(
+		PLI_INT32   type,
+        vpiHandle   refHandle1,
+        vpiHandle   refHandle2,
+        ... ) {
+	return 0;
+}
+
+vpiHandle vpi_iterate(
+		PLI_INT32   type,
+        vpiHandle   refHandle) {
+	return 0;
+}
+
+vpiHandle vpi_scan(
+		vpiHandle   iterator) {
+	return 0;
+}
+
+/* for processing properties */
+
+PLI_INT32 vpi_get(
+		PLI_INT32   property,
+        vpiHandle   object) {
+	return -1;
+}
+
+PLI_INT64 vpi_get64(
+		PLI_INT32   property,
+        vpiHandle   object) {
+	return -1;
+}
+
+PLI_BYTE8 *vpi_get_str(
+		PLI_INT32   property,
+        vpiHandle   object) {
+	return 0;
+}
+
+/* delay processing */
+
+void vpi_get_delays(
+		vpiHandle 		object,
+        p_vpi_delay 	delay_p) {
+
+}
+
+void vpi_put_delays(
+		vpiHandle 		object,
+        p_vpi_delay 	delay_p) {
+
+}
+
+/* value processing */
+
+void vpi_get_value(
+		vpiHandle 		expr,
+        p_vpi_value 	value_p) {
+
+}
+
+vpiHandle vpi_put_value(
+		vpiHandle 		object,
+        p_vpi_value 	value_p,
+        p_vpi_time 		time_p,
+        PLI_INT32 		flags) {
+	return 0;
+}
+
+void vpi_get_value_array(
+		vpiHandle 			object,
+        p_vpi_arrayvalue 	arrayvalue_p,
+        PLI_INT32 			*index_p,
+        PLI_UINT32 			num) {
+
+}
+
+void vpi_put_value_array(
+		vpiHandle 			object,
+        p_vpi_arrayvalue 	arrayvalue_p,
+        PLI_INT32 			*index_p,
+        PLI_UINT32 			num) {
+
+}
+
+/* time processing */
+
+void vpi_get_time(
+		vpiHandle object,
+        p_vpi_time time_p) {
+	DEBUG_ENTER("vpi_get_time: type=%d", time_p->type);
+	double time = sc_core::sc_get_curr_simcontext()->time_stamp().to_double();
+	time_p->low = time;
+	time_p->high = 0;
+
+	DEBUG_LEAVE("vpi_get_time");
+}
+
+/* I/O routines */
+
+PLI_UINT32 vpi_mcd_open(PLI_BYTE8 *fileName) {
+	return 0;
+}
+
+PLI_UINT32 vpi_mcd_close(PLI_UINT32 mcd) {
+	return 0;
+}
+
+PLI_BYTE8 *vpi_mcd_name(PLI_UINT32 cd) {
+	return 0;
+}
+
+PLI_INT32 vpi_mcd_printf(
+		PLI_UINT32 mcd,
+        PLI_BYTE8 *format,
+        ...) {
+	return -1;
+}
+
+PLI_INT32 vpi_printf(PLI_BYTE8 *format, ...) {
+	return -1;
+}
+
+/* utility routines */
+
+PLI_INT32 vpi_compare_objects(
+		vpiHandle object1,
+        vpiHandle object2) {
+	return -1;
+}
+
+PLI_INT32 vpi_chk_error(p_vpi_error_info error_info_p) {
+	error_info_p->code = 0;
+	return 0;
+}
+
+/* vpi_free_object() was deprecated in 1800-2009 */
+PLI_INT32 vpi_free_object(vpiHandle object) {
+	return -1;
+}
+
+PLI_INT32 vpi_release_handle(
+		vpiHandle object) {
+	return -1;
+}
+
+PLI_INT32 vpi_get_vlog_info(p_vpi_vlog_info vlog_info_p) {
+	DEBUG_ENTER("vpi_get_vlog_info");
+	vlog_info_p->argc = sc_core::sc_argc();
+	vlog_info_p->argv = (PLI_BYTE8 **)sc_core::sc_argv();
+	vlog_info_p->product = (PLI_BYTE8 *)"systemc";
+	vlog_info_p->version = (PLI_BYTE8 *)"3.0";
+	DEBUG_LEAVE("vpi_get_vlog_info");
+	return 1;
+}
+
+/* routines added with 1364-2001 */
+
+PLI_INT32 vpi_get_data(
+		PLI_INT32 id,
+        PLI_BYTE8 *dataLoc,
+        PLI_INT32 numOfBytes) {
+	return -1;
+}
+
+PLI_INT32 vpi_put_data(
+		PLI_INT32 id,
+        PLI_BYTE8 *dataLoc,
+        PLI_INT32 numOfBytes) {
+	return -1;
+}
+
+void *vpi_get_userdata(vpiHandle obj) {
+	return 0;
+}
+
+PLI_INT32 vpi_put_userdata(
+		vpiHandle obj,
+        void *userdata) {
+	return -1;
+}
+PLI_INT32 vpi_vprintf(
+		PLI_BYTE8 *format,
+        va_list ap) {
+	return -1;
+}
+
+PLI_INT32 vpi_mcd_vprintf(
+		PLI_UINT32 mcd,
+        PLI_BYTE8 *format,
+        va_list ap) {
+	return 1;
+}
+
+PLI_INT32 vpi_flush(void) {
+	return -1;
+}
+
+PLI_INT32 vpi_mcd_flush(PLI_UINT32 mcd) {
+	return -1;
+}
+
+PLI_INT32 vpi_control(
+		PLI_INT32 operation,
+        ...) {
+	return -1;
+}
+
+vpiHandle vpi_handle_by_multi_index(
+		vpiHandle obj,
+        PLI_INT32 num_index,
+        PLI_INT32 *index_array) {
+	return 0;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#undef DEBUG_ENTER
+#undef DEBUG_LEAVE
+#undef DEBUG
+
+
+

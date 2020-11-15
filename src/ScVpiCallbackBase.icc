@@ -1,0 +1,29 @@
+/*
+ * ScVpiCallbackBase.cpp
+ *
+ *  Created on: Nov 14, 2020
+ *      Author: mballance
+ */
+
+#include "ScVpiCallbackBase.h"
+
+namespace scvpi {
+
+ScVpiCallbackBase::ScVpiCallbackBase(p_cb_data cbd) {
+	m_cb_data.reason = cbd->reason;
+	m_cb_data.cb_rtn = cbd->cb_rtn;
+	m_cb_data.time = 0;
+	m_cb_data.value = 0;
+	m_cb_data.index = -1;
+	m_cb_data.user_data = cbd->user_data;
+}
+
+ScVpiCallbackBase::~ScVpiCallbackBase() {
+	// TODO Auto-generated destructor stub
+}
+
+void ScVpiCallbackBase::invoke() {
+	m_cb_data.cb_rtn(&m_cb_data);
+}
+
+}
