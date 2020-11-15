@@ -7,10 +7,11 @@
 
 #pragma once
 #include "vpi_user_int.h"
+#include "ScVpiHandle.h"
 
 namespace scvpi {
 
-class ScVpiCallbackBase {
+class ScVpiCallbackBase : public ScVpiHandle {
 
 public:
 	ScVpiCallbackBase(p_cb_data cbd);

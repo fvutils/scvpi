@@ -9,7 +9,8 @@
 
 namespace scvpi {
 
-ScVpiCallbackBase::ScVpiCallbackBase(p_cb_data cbd) {
+ScVpiCallbackBase::ScVpiCallbackBase(p_cb_data cbd) :
+		ScVpiHandle(HandleKind_Callback) {
 	m_cb_data.reason = cbd->reason;
 	m_cb_data.cb_rtn = cbd->cb_rtn;
 	m_cb_data.time = 0;

@@ -31,6 +31,10 @@ public:
 
 	void add_end_of_sim_cb(ScVpiCallbackBase *cb);
 
+	virtual const char *kind() const {
+		return "scvpi_plugin";
+	}
+
 	static ScVpi *inst();
 
 private:

@@ -19,14 +19,17 @@
 
 class top : public sc_module {
 public:
-    top(const sc_module_name &name) : sc_module(name) {
+
+	sc_signal<bool>		m_sig;
+
+    top(const sc_module_name &name) : sc_module(name),
+    		m_sig("m_sig") {
     }
 
     void end_of_elaboration() {
         fprintf(stdout, "top::end_of_elaboration sc_argc=%d\n",
 			sc_argc());
     }
-
 };
 
 

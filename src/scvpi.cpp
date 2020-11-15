@@ -108,3 +108,7 @@ ScVpi ScVpi::m_inst("__scvpi_plugin");
 
 #include "vpi.icc"
 #include "ScVpiCallbackBase.icc"
+#include "ScVpiHandle.icc"
+#include "ScVpiHandleIterator.icc"
+#include "ScVpiHandleObject.icc"
+

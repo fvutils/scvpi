@@ -1,0 +1,39 @@
+/*
+ * ScVpiHandlObject.cpp
+ *
+ *  Created on: Nov 15, 2020
+ *      Author: mballance
+ */
+
+#include "ScVpiHandleObject.h"
+#include "vpi_user_int.h"
+
+namespace scvpi {
+
+ScVpiHandleObject::ScVpiHandleObject() :
+	ScVpiHandle(HandleKind_Object), m_obj(0) {
+
+}
+
+ScVpiHandleObject::ScVpiHandleObject(sc_core::sc_object *obj) :
+	ScVpiHandle(HandleKind_Object), m_obj(obj) {
+
+}
+
+ScVpiHandleObject::~ScVpiHandleObject() {
+	// TODO Auto-generated destructor stub
+}
+
+const char *ScVpiHandleObject::name() const {
+	return m_obj->name();
+}
+
+int32_t ScVpiHandleObject::getVpiType() const {
+	if (!strcmp(m_obj->kind(), "sc_module")) {
+		return vpiModule;
+	} else {
+		return -1;
+	}
+}
+
+}

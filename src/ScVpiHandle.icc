@@ -1,0 +1,21 @@
+/*
+ * ScVpiHandle.cpp
+ *
+ *  Created on: Nov 15, 2020
+ *      Author: mballance
+ */
+
+#include "ScVpiHandle.h"
+
+namespace scvpi {
+
+ScVpiHandle::ScVpiHandle(ScVpiHandleKind kind) : m_kind(kind) {
+	// TODO Auto-generated constructor stub
+
+}
+
+ScVpiHandle::~ScVpiHandle() {
+	// TODO Auto-generated destructor stub
+}
+
+}

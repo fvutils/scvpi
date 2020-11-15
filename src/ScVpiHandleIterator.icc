@@ -1,0 +1,43 @@
+/*
+ * ScVpiObjectIterator.cpp
+ *
+ *  Created on: Nov 14, 2020
+ *      Author: mballance
+ */
+
+#include <string.h>
+#include <systemc>
+#include "ScVpiHandleIterator.h"
+
+namespace scvpi {
+
+ScVpiHandleIterator::ScVpiHandleIterator(
+		const char								*kind,
+		const std::vector<sc_core::sc_object*> 	&items) :
+				ScVpiHandle(HandleKind_Iterator),
+				m_kind(kind), m_items(items), m_index(0) {
+
+}
+
+ScVpiHandleIterator::~ScVpiHandleIterator() {
+	// TODO Auto-generated destructor stub
+}
+
+ScVpiHandleObject *ScVpiHandleIterator::next() {
+	ScVpiHandleObject *ret = 0;
+	while (m_index < m_items.size()) {
+		// Should simplify
+		if (!strcmp(m_items.at(m_index)->kind(), m_kind)) {
+			m_item.obj(m_items.at(m_index));
+			ret = &m_item;
+		}
+		m_index++;
+		if (ret) {
+			break;
+		}
+	}
+
+	return ret;
+}
+
+}
