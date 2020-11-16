@@ -15,6 +15,6 @@ if test $? -ne 0; then exit 1; fi
 export LD_LIBRARY_PATH=${SYSTEMC}/lib-linux64:${LD_LIBRARY_PATH}
 
 export MODULE=tb
-# ./test +vpi=${vpi} $*
-valgrind --tool=memcheck ./test +vpi=${vpi} $*
+./test +vpi=${vpi} $*
+# valgrind --tool=memcheck ./test +vpi=${vpi} $*
 

@@ -23,13 +23,13 @@ ScVpiHandleIterator::~ScVpiHandleIterator() {
 	// TODO Auto-generated destructor stub
 }
 
-ScVpiHandleObject *ScVpiHandleIterator::next() {
-	ScVpiHandleObject *ret = 0;
+sc_core::sc_object *ScVpiHandleIterator::next() {
+	sc_core::sc_object *ret = 0;
 	while (m_index < m_items.size()) {
 		// Should simplify
-		if (!strcmp(m_items.at(m_index)->kind(), m_kind)) {
-			m_item.obj(m_items.at(m_index));
-			ret = &m_item;
+		fprintf(stdout, "iterate: kind=%s\n", m_items.at(m_index)->kind());
+		if (equals(m_items.at(m_index)->kind(), m_kind)) {
+			ret = m_items.at(m_index);
 		}
 		m_index++;
 		if (ret) {
@@ -38,6 +38,16 @@ ScVpiHandleObject *ScVpiHandleIterator::next() {
 	}
 
 	return ret;
+}
+
+bool ScVpiHandleIterator::equals(const char *s1, const char *s2) {
+	bool ret = true;
+
+	while ((*s1 && *s2) && (*s1==*s2)) {
+		s1++;
+		s2++;
+	}
+	return !(*s1 || *s2);
 }
 
 }

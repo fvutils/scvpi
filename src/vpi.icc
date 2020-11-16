@@ -6,30 +6,32 @@
  */
 
 #pragma once
+#include <map>
 #include "vpi_user_int.h"
 #include <stdio.h>
 #include "ScVpiCallbackBase.h"
 #include "ScVpiHandleIterator.h"
 #include "ScVpiHandleObject.h"
+#include "ScVpiTimedCallback.h"
 #include "scvpi.h"
 
 using namespace scvpi;
 
-#define EN_DEBUG_VPI
+#undef EN_DEBUG_VPI
 
 #ifdef EN_DEBUG_VPI
 #define DEBUG_ENTER(fmt, ...) \
 	fprintf(stdout, "--> VPI: "); \
 	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
+	fprintf(stdout, "\n"); fflush(stdout)
 #define DEBUG_LEAVE(fmt, ...) \
 	fprintf(stdout, "<-- VPI: "); \
 	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
+	fprintf(stdout, "\n"); fflush(stdout)
 #define DEBUG(fmt, ...) \
 	fprintf(stdout, "VPI: "); \
 	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
+	fprintf(stdout, "\n"); fflush(stdout)
 #else
 #define DEBUG_ENTER(fmt, ...)
 #define DEBUG_LEAVE(fmt, ...)
@@ -55,12 +57,17 @@ vpiHandle vpi_register_cb(p_cb_data cb_data_p) {
 		ScVpiCallbackBase *cb = new ScVpiCallbackBase(cb_data_p);
 		ScVpi::inst()->add_start_of_sim_cb(cb);
 
-		ret = reinterpret_cast<vpiHandle>(cb);
+		ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(cb));
 	} break;
 	case cbEndOfSimulation: {
 		ScVpiCallbackBase *cb = new ScVpiCallbackBase(cb_data_p);
 		ScVpi::inst()->add_end_of_sim_cb(cb);
-		ret = reinterpret_cast<vpiHandle>(cb);
+		ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(cb));
+	} break;
+	case cbAfterDelay: {
+		DEBUG("cbAfterDelay");
+		ScVpiTimedCallback *cb = new ScVpiTimedCallback(cb_data_p);
+		ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(cb));
 	} break;
 	default:
 		DEBUG("Unknown: 0x%08x", cb_data_p->reason);
@@ -129,11 +136,16 @@ vpiHandle vpi_iterate(
 		PLI_INT32   type,
         vpiHandle   refHandle) {
 	vpiHandle ret = 0;
+	sc_core::sc_object *ref = reinterpret_cast<sc_core::sc_object *>(refHandle);
 	DEBUG_ENTER("vpi_iterate: %d\n", type);
 	switch (type) {
 	case vpiModule: {
 		if (refHandle) {
 			fprintf(stdout, "TODO: vpi_iterate vpiModule on provided\n");
+			ScVpiHandleIterator *it = new ScVpiHandleIterator(
+					"sc_module",
+					ref->get_child_objects());
+			ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(it));
 		} else {
 			// Root module
 			ScVpiHandleIterator *it = new ScVpiHandleIterator(
@@ -141,6 +153,13 @@ vpiHandle vpi_iterate(
 					sc_core::sc_get_top_level_objects());
 			ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(it));
 		}
+	} break;
+
+	case vpiNet: {
+		ScVpiHandleIterator *it = new ScVpiHandleIterator(
+				"sc_signal",
+				ref->get_child_objects());
+		ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(it));
 	} break;
 
 	case vpiTopModule: {
@@ -160,25 +179,32 @@ vpiHandle vpi_scan(vpiHandle iterator) {
 	DEBUG_ENTER("vpi_scan");
 	ScVpiHandleIterator *it = static_cast<ScVpiHandleIterator *>(
 			reinterpret_cast<ScVpiHandle *>(iterator));
-	ret = reinterpret_cast<vpiHandle>(static_cast<ScVpiHandle *>(it->next()));
+	ret = reinterpret_cast<vpiHandle>(it->next());
 	DEBUG_LEAVE("vpi_scan (%p)", ret);
 	return ret;
 }
 
 /* for processing properties */
+static std::map<std::string, int32_t> vpi_type_m = {
+	{ "sc_module" , vpiModule },
+	{ "sc_signal",  vpiNet }
+};
 
 PLI_INT32 vpi_get(
 		PLI_INT32   property,
         vpiHandle   object) {
 	PLI_INT32 ret = -1;
 	DEBUG_ENTER("vpi_get: %d", property);
-	ScVpiHandleObject *obj = static_cast<ScVpiHandleObject *>(
-			reinterpret_cast<ScVpiHandle *>(object));
+	sc_core::sc_object *obj = reinterpret_cast<sc_core::sc_object *>(object);
 	switch (property) {
 	case vpiType: {
-		ret = obj->getVpiType();
+		std::map<std::string,int32_t>::iterator it;
+		if ((it=vpi_type_m.find(obj->kind())) != vpi_type_m.end()) {
+			ret = it->second;
+		}
 	} break;
 	case vpiTimePrecision: {
+		ret = -12;
 		// SystemC has global time precision
 //		switch (sc_core::sc_get_time_resolution().sc) {
 //		case sc_core::SC_FS:
@@ -202,6 +228,11 @@ PLI_INT32 vpi_get(
 //		}
 	} break;
 
+	case vpiTimeUnit: {
+		ret = -12;
+
+	} break;
+
 	default:
 		break;
 	}
@@ -219,14 +250,13 @@ PLI_INT64 vpi_get64(
 PLI_BYTE8 *vpi_get_str(
 		PLI_INT32   property,
         vpiHandle   object) {
-	const char *ret = 0;
+	const char *ret = "<unknown>";
 	DEBUG_ENTER("vpi_get_str: %d", property);
-	ScVpiHandleObject *obj = static_cast<ScVpiHandleObject *>(
-			reinterpret_cast<ScVpiHandle *>(object));
+	sc_core::sc_object *obj = reinterpret_cast<sc_core::sc_object *>(object);
 
 	ret = obj->name();
 
-	DEBUG_LEAVE("vpi_get_str");
+	DEBUG_LEAVE("vpi_get_str (%s)", ret);
 	return (PLI_BYTE8 *)ret;
 }
 
@@ -283,6 +313,7 @@ void vpi_get_time(
         p_vpi_time time_p) {
 	DEBUG_ENTER("vpi_get_time: type=%d", time_p->type);
 	double time = sc_core::sc_get_curr_simcontext()->time_stamp().to_double();
+	DEBUG("  time: %f", time);
 	time_p->low = time;
 	time_p->high = 0;
 
@@ -329,7 +360,11 @@ PLI_INT32 vpi_chk_error(p_vpi_error_info error_info_p) {
 
 /* vpi_free_object() was deprecated in 1800-2009 */
 PLI_INT32 vpi_free_object(vpiHandle object) {
-	return -1;
+	DEBUG_ENTER("vpi_free_object: %p\n", object);
+	ScVpiHandle *hndl = reinterpret_cast<ScVpiHandle *>(object);
+	delete hndl;
+	DEBUG_LEAVE("vpi_free_object: %p\n", object);
+	return 1;
 }
 
 PLI_INT32 vpi_release_handle(

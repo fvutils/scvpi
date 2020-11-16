@@ -11,6 +11,10 @@
 #include "ScVpiHandle.h"
 #include "ScVpiHandleObject.h"
 
+namespace sc_core {
+	class sc_object;
+}
+
 namespace scvpi {
 
 class ScVpiHandleIterator : public ScVpiHandle {
@@ -21,7 +25,9 @@ public:
 
 	virtual ~ScVpiHandleIterator();
 
-	ScVpiHandleObject *next();
+	sc_core::sc_object  *next();
+
+	static bool equals(const char *s1, const char *s2);
 
 private:
 	const char									*m_kind;

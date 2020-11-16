@@ -1,0 +1,60 @@
+/*
+ * ScVpiTimedCallback.cpp
+ *
+ *  Created on: Nov 15, 2020
+ *      Author: mballance
+ */
+
+#include "ScVpiTimedCallback.h"
+#include <systemc>
+
+namespace scvpi {
+
+class sc_timed_callback : public sc_core::sc_process_host {
+public:
+	sc_timed_callback(
+			ScVpiTimedCallback		*cb,
+			const sc_core::sc_time 	&t) : m_cb(cb), m_count(0), m_time(t) {
+        ::sc_core::sc_process_handle handle =
+            sc_core::sc_get_curr_simcontext()->create_method_process(
+                0,
+				true,
+				SC_MAKE_FUNC_PTR(sc_timed_callback, callback),
+                this,
+				0);
+	}
+
+private:
+	void callback() {
+		fprintf(stdout, "callback: count=%d\n", m_count);
+		if (m_count == 0) {
+			// We're called immediately, and reschedule ourselves
+			next_trigger(m_time, sc_core::sc_get_curr_simcontext());
+		} else {
+			m_cb->invoke();
+		}
+		m_count++;
+	}
+
+
+private:
+	ScVpiTimedCallback		*m_cb;
+	uint32_t				m_count;
+	sc_core::sc_time		m_time;
+};
+
+ScVpiTimedCallback::ScVpiTimedCallback(p_cb_data cbd) : ScVpiCallbackBase(cbd) {
+	fprintf(stdout, "ScVpiTimedCallback\n");
+	fprintf(stdout, "time: %d %d %d\n",
+			cbd->time->high,
+			cbd->time->low,
+			cbd->time->type);
+	sc_core::sc_time t(cbd->time->low, sc_core::SC_PS);
+	m_cb = sc_timed_callback_up(new sc_timed_callback(this, t));
+}
+
+ScVpiTimedCallback::~ScVpiTimedCallback() {
+	// TODO Auto-generated destructor stub
+}
+
+} /* namespace scvpi */
