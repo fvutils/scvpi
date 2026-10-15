@@ -636,6 +636,7 @@ PLI_INT32 vpi_get(PLI_INT32 property, vpiHandle object) {
     }
 
     auto itH = g_handles.find(object);
+
     if (property == vpiType) {
         return (itH != g_handles.end()) ? itH->second->vpi_type : 0;
     }
@@ -648,7 +649,33 @@ PLI_INT32 vpi_get(PLI_INT32 property, vpiHandle object) {
         return 1;
     }
 
+    // cocotb 2.1 queries VPI signedness for integer objects.
+    if (property == vpiSigned) {
+        if (itH == g_handles.end()) {
+            return 0;
+        }
+
+        switch (itH->second->kind) {
+        case SigInt32:
+        case SigInt4:
+            return 1;
+
+        case SigBool:
+        case SigUInt3:
+        case SigUInt4:
+        case SigUInt5:
+        case SigUInt8:
+        case SigUInt9:
+        case SigUInt16:
+        case SigUInt32:
+        case SigUnknown:
+        default:
+            return 0;
+        }
+    }
+
     if (property == vpiTimePrecision || property == vpiTimeUnit) return -9;
+
     return 0;
 }
 

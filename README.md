@@ -70,7 +70,7 @@ Additional signal types can be added as needed.
 
 - SystemC 3.0.2
 - CMake 3.15 or newer
-- Python 3.11 or newer
+- Python 3.12 or newer
 - uv
 
 Install the Python dependencies (including **cocotb 2.x** and

@@ -33,12 +33,13 @@ COCOTB_LIBPYTHON     = $(shell $(COCOTB_CMD) --libpython 2>/dev/null || echo "")
 COCOTB_LIBPYTHON_DIR = $(dir $(COCOTB_LIBPYTHON))
 COCOTB_PYTHON_BIN    = $(shell $(COCOTB_CMD) --python-bin 2>/dev/null || echo "python3")
 COCOTB_LIB_DIR       = $(shell $(COCOTB_CMD) --lib-dir 2>/dev/null || echo "")
+COCOTB_PYGPI_ENTRY   = $(shell $(COCOTB_CMD) --pygpi-entry-point 2>/dev/null || echo "")
 
 # VPI library paths
-COCOTB_VPI_VERILATOR = $(COCOTB_LIB_DIR)/libcocotbvpi_verilator.so
-COCOTB_VPI_QUESTA    = $(COCOTB_LIB_DIR)/libcocotbvpi_modelsim.so
-COCOTB_VPI_XCELIUM   = $(COCOTB_LIB_DIR)/libcocotbvpi_ius.so
-COCOTB_VPI_ICARUS    = $(COCOTB_LIB_DIR)/libcocotbvpi_icarus.vpl
+COCOTB_VPI_VERILATOR = $(shell $(COCOTB_CMD) --lib-name-path vpi verilator 2>/dev/null || echo "")
+COCOTB_VPI_QUESTA    = $(shell $(COCOTB_CMD) --lib-name-path vpi questa 2>/dev/null || echo "")
+COCOTB_VPI_XCELIUM   = $(shell $(COCOTB_CMD) --lib-name-path vpi xcelium 2>/dev/null || echo "")
+COCOTB_VPI_ICARUS    = $(shell $(COCOTB_CMD) --lib-name-path vpi icarus 2>/dev/null || echo "")
 
 # ------------------------------------------------------------------------------
 # Build Configurations
@@ -58,6 +59,7 @@ ICARUS_LDFLAGS    = $(SYSTEMC_LDFLAGS) $(BASE_LDFLAGS)
 BASE_COCOTB_ENV = \
 	PYTHONPATH=.:$$PYTHONPATH \
 	PYGPI_PYTHON_BIN=$(COCOTB_PYTHON_BIN) \
+	GPI_USERS="$(COCOTB_LIBPYTHON);$(COCOTB_PYGPI_ENTRY)" \
 	COCOTB_TEST_MODULES=tb \
 	COCOTB_RESULTS_FILE=$(RESULTS_FILE) \
 	COCOTB_RANDOM_SEED=$(RANDOM_SEED)

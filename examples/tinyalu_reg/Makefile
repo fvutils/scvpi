@@ -35,10 +35,11 @@ SIM_EXE := $(BUILD_DIR)/TINYALU_REG_SC
 
 COCOTB_CMD := $(PYTHON) -m cocotb_tools.config
 COCOTB_LIB_DIR := $(shell $(COCOTB_CMD) --lib-dir 2>/dev/null)
-VPI_SO := $(COCOTB_LIB_DIR)/libcocotbvpi_icarus.vpl
+VPI_SO := $(shell $(COCOTB_CMD) --lib-name-path vpi icarus 2>/dev/null)
 
 COCOTB_LIBPYTHON := $(shell $(COCOTB_CMD) --libpython 2>/dev/null)
 COCOTB_LIBPYTHON_DIR := $(dir $(COCOTB_LIBPYTHON))
+COCOTB_PYGPI_ENTRY := $(shell $(COCOTB_CMD) --pygpi-entry-point 2>/dev/null)
 
 RESULTS_FILE := $(CURDIR)/results_$(MODEL).xml
 RESULTS_CHECKER := $(CURDIR)/../../tools/check_cocotb_results.py
@@ -117,6 +118,7 @@ else
 		PATH="$$(dirname "$(PYTHON)"):$$PATH" \
 		PYTHONHOME= \
 		PYGPI_PYTHON_BIN="$(PYTHON)" \
+		GPI_USERS="$(COCOTB_LIBPYTHON);$(COCOTB_PYGPI_ENTRY)" \
 		COCOTB_TEST_MODULES=tests.testbench \
 		COCOTB_RESULTS_FILE="$(RESULTS_FILE)" \
 		COCOTB_RANDOM_SEED="$(RANDOM_SEED)" \
@@ -210,4 +212,4 @@ help:
 .PHONY: clean
 clean:
 	rm -rf build_hdl build_rtl build_tlm traces results*.xml sim_build __pycache__ tests/__pycache__
-	$(MAKE) -C model_hdl clean PYTHON="$(PYTHON)" || true
+	$(MAKE) -C model_hdl clean PYTHON="$(PYTHON)" SIM=icarus || true
