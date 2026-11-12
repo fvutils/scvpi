@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+title: "SCVPI: (System)Verilog VPI functions for SystemC"
+abstract: >-
+  SCVPI is a VPI-compatible interface for SystemC that enables cocotb and
+  cocotb-based verification frameworks such as PyUVM to run directly on
+  SystemC models, allowing Python verification environments to be reused
+  across HDL RTL, SystemC RTL, and SystemC TLM models.
+authors:
+  - given-names: Matthew
+    family-names: Ballance
+  - given-names: Bhavay
+    family-names: Arora
+    affiliation: Bosch Sensortec GmbH
+repository-code: "https://github.com/fvutils/scvpi"
+url: "https://github.com/fvutils/scvpi"
+license: Apache-2.0
+version: 0.1.0
+keywords:
+  - SystemC
+  - VPI
+  - cocotb
+  - PyUVM
+  - TLM
+  - verification
+preferred-citation:
+  type: conference-paper
+  title: "Enabling Cross-Language and Cross-Level Verification Reuse Using SCVPI*"
+  authors:
+    - given-names: Bhavay
+      family-names: Arora
+    - given-names: Rainer
+      family-names: Dorsch
+    - given-names: Christian
+      family-names: Haubelt
+  collection-title: "2026 Forum on Specification & Design Languages (FDL)"
+  collection-type: proceedings
+  conference:
+    name: "Forum on Specification & Design Languages (FDL)"
+  year: 2026
+  start: 1
+  end: 7
+  doi: "10.1109/FDL71572.2026.11724698"
+references:
+  - type: conference-paper
+    title: "SCVPI*: A Reusable PyUVM-Based Verification Framework for RTL and SystemC Models"
+    authors:
+      - given-names: Bhavay
+        family-names: Arora
+      - given-names: Rainer
+        family-names: Dorsch
+      - given-names: Christian
+        family-names: Haubelt
+    collection-title: "MBMV 2026; 29. Workshop, Methods and Description Languages for Modeling and Verification of Circuits and Systems"
+    collection-type: proceedings
+    conference:
+      name: "MBMV 2026"
+    year: 2026
+    start: 144
+    end: 152
