@@ -153,6 +153,44 @@ make -C examples/tinyalu_reg run-sc-tlm-target-wait RANDOM_SEED=12345
 
 ------------------------------------------------------------------------
 
+## Citation
+
+If you use SCVPI in your research, please cite the following paper:
+
+> B. Arora, R. Dorsch, and C. Haubelt, "Enabling Cross-Language and
+> Cross-Level Verification Reuse Using SCVPI\*," in *2026 Forum on
+> Specification & Design Languages (FDL)*, 2026, pp. 1–7,
+> doi: [10.1109/FDL71572.2026.11724698](https://doi.org/10.1109/FDL71572.2026.11724698).
+
+```bibtex
+@inproceedings{arora2026fdl,
+  author    = {Arora, Bhavay and Dorsch, Rainer and Haubelt, Christian},
+  booktitle = {2026 Forum on Specification \& Design Languages (FDL)},
+  title     = {Enabling Cross-Language and Cross-Level Verification Reuse Using {SCVPI*}},
+  year      = {2026},
+  pages     = {1--7},
+  doi       = {10.1109/FDL71572.2026.11724698}
+}
+```
+
+Related publication:
+
+```bibtex
+@inproceedings{arora2026mbmv,
+  author    = {Arora, Bhavay and Dorsch, Rainer and Haubelt, Christian},
+  booktitle = {MBMV 2026; 29. Workshop, Methods and Description Languages
+               for Modeling and Verification of Circuits and Systems},
+  title     = {{SCVPI*}: A Reusable {PyUVM}-Based Verification Framework
+               for {RTL} and {SystemC} Models},
+  year      = {2026},
+  pages     = {144--152}
+}
+```
+
+Citation metadata is also provided in [CITATION.cff](CITATION.cff).
+
+------------------------------------------------------------------------
+
 ## License
 
 This project is released under the applicable open-source license.
