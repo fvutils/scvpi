@@ -187,6 +187,20 @@ Related publication:
 }
 ```
 
+SCVPI was originally created by Matthew Ballance
+([fvutils/scvpi](https://github.com/fvutils/scvpi)). To cite the software
+itself, use:
+
+```bibtex
+@software{scvpi,
+  author  = {Ballance, Matthew and Arora, Bhavay},
+  title   = {{SCVPI}: (System)Verilog {VPI} functions for {SystemC}},
+  version = {0.1.0},
+  license = {Apache-2.0},
+  url     = {https://github.com/fvutils/scvpi}
+}
+```
+
 Citation metadata is also provided in [CITATION.cff](CITATION.cff).
 
 ------------------------------------------------------------------------
