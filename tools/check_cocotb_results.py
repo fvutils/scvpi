@@ -23,17 +23,19 @@ def main() -> int:
     testcases = list(root.iter("testcase"))
     failures = list(root.iter("failure"))
     errors = list(root.iter("error"))
+    skipped = list(root.iter("skipped"))
 
     if not testcases:
         print("ERROR: cocotb results contain no test cases")
         return 1
 
-    if failures or errors:
+    if failures or errors or skipped:
         print(
             f"cocotb regression failed: "
             f"{len(testcases)} test(s), "
             f"{len(failures)} failure(s), "
-            f"{len(errors)} error(s)"
+            f"{len(errors)} error(s), "
+            f"{len(skipped)} skipped test(s)"
         )
         return 1
 

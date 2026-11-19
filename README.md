@@ -108,6 +108,15 @@ Demonstrates reuse of the same PyUVM register-model verification
 environment across HDL RTL, SystemC RTL, and SystemC TLM
 implementations.
 
+### examples/tlm_target
+
+SystemC-initiated blocking TLM transactions serviced by a Python/cocotb
+peripheral model. The reusable `scvpi::TlmTarget` queues requests and
+yields to the SystemC kernel while a coroutine supplies the response.
+Includes native protocol tests and a cocotb register-model example;
+see [the target API guide](examples/tlm_target/README.md) for setup,
+timing, and limitations. The existing Python-initiated TLM API is unchanged.
+
 ------------------------------------------------------------------------
 
 ## Quick Start
