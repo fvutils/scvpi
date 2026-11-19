@@ -32,4 +32,5 @@
 *.app
 
 packages/
+__pycache__/
 

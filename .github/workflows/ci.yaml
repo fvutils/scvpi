@@ -98,3 +98,7 @@ jobs:
             MODEL=tlm \
             TLM_TARGET_CONSUMES_TIME=1
           make -C examples/tinyalu_reg run-sc-tlm-target-wait
+
+          # SystemC initiator -> Python/cocotb TLM target.
+          make -C examples/tlm_target test-native
+          make -C examples/tlm_target run
