@@ -27,7 +27,7 @@ struct TlmTargetRequest {
 // A blocking TLM target whose requests are serviced by a cocotb coroutine.
 // Calls must originate from a SystemC process that may wait (e.g. SC_THREAD).
 class TlmTarget : public sc_core::sc_module {
-public:
+  public:
     tlm_utils::simple_target_socket<TlmTarget, 32> socket;
     // VPI-visible wake-up toggle. The request FIFO, not this signal, is authoritative.
     sc_core::sc_signal<bool> request_toggle;
@@ -37,15 +37,12 @@ public:
                        sc_core::sc_time response_timeout = sc_core::sc_time(1, sc_core::SC_MS));
     ~TlmTarget() override;
 
-    bool try_recv(TlmTargetRequest& request);
-    bool copy_request(uint64_t id,
-                      std::vector<unsigned char>& data,
-                      std::vector<unsigned char>& byte_en) const;
-    int respond(uint64_t id,
-                const std::vector<unsigned char>& data,
-                int response_status);
+    bool try_recv(TlmTargetRequest &request);
+    bool copy_request(uint64_t id, std::vector<unsigned char> &data,
+                      std::vector<unsigned char> &byte_en) const;
+    int respond(uint64_t id, const std::vector<unsigned char> &data, int response_status);
 
-private:
+  private:
     struct PendingRequest {
         TlmTargetRequest request;
         sc_core::sc_event completed_event;
@@ -56,7 +53,7 @@ private:
         bool delivered = false;
     };
 
-    void b_transport(tlm::tlm_generic_payload& payload, sc_core::sc_time& delay);
+    void b_transport(tlm::tlm_generic_payload &payload, sc_core::sc_time &delay);
     void publish_requests();
 
     std::deque<std::shared_ptr<PendingRequest>> requests_;
@@ -67,9 +64,7 @@ private:
 };
 
 // Called by the Python extension on the SystemC simulation thread.
-bool tlm_target_try_recv(const std::string& endpoint, TlmTargetRequest& request);
-int tlm_target_respond(const std::string& endpoint,
-                       uint64_t id,
-                       const std::vector<unsigned char>& data,
-                       int response_status);
+bool tlm_target_try_recv(const std::string &endpoint, TlmTargetRequest &request);
+int tlm_target_respond(const std::string &endpoint, uint64_t id,
+                       const std::vector<unsigned char> &data, int response_status);
 } // namespace scvpi

@@ -88,7 +88,9 @@ class TlmTarget:
             int(response_status),
         )
 
-    async def serve(self, handler: Callable[[TlmRequest], Awaitable[TlmResponse]]) -> None:
+    async def serve(
+        self, handler: Callable[[TlmRequest], Awaitable[TlmResponse]]
+    ) -> None:
         """Serve requests serially; fail an in-flight request if its handler raises.
 
         Handler coroutines may consume service latency using cocotb triggers.

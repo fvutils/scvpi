@@ -39,14 +39,13 @@ SC_MODULE(Top) {
         payload.set_response_status(tlm::TLM_INCOMPLETE_RESPONSE);
         initiator->b_transport(payload, delay);
         sc_assert(payload.get_response_status() == tlm::TLM_OK_RESPONSE);
-        sc_assert(data[0] == 0x11 && data[1] == 0x22 &&
-              data[2] == 0x33 && data[3] == 0x44);
+        sc_assert(data[0] == 0x11 && data[1] == 0x22 && data[2] == 0x33 && data[3] == 0x44);
 
-          // A failing Python handler must still release the blocked initiator.
-          payload.set_address(0xBAD);
-          payload.set_response_status(tlm::TLM_INCOMPLETE_RESPONSE);
-          initiator->b_transport(payload, delay);
-          sc_assert(payload.get_response_status() == tlm::TLM_GENERIC_ERROR_RESPONSE);
+        // A failing Python handler must still release the blocked initiator.
+        payload.set_address(0xBAD);
+        payload.set_response_status(tlm::TLM_INCOMPLETE_RESPONSE);
+        initiator->b_transport(payload, delay);
+        sc_assert(payload.get_response_status() == tlm::TLM_GENERIC_ERROR_RESPONSE);
 
         std::cout << "PASS: cocotb-serviced SystemC TLM target\n";
         done.write(true);
@@ -58,7 +57,7 @@ SC_MODULE(Top) {
 
 extern "C" void scvpi_autoregister_all();
 
-int sc_main(int, char**) {
+int sc_main(int, char **) {
     Top top("top");
     scvpi_autoregister_all();
     sc_core::sc_start();

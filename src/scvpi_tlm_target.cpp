@@ -5,9 +5,9 @@
 
 namespace scvpi {
 namespace {
-using TargetMap = std::map<std::string, TlmTarget*>;
+using TargetMap = std::map<std::string, TlmTarget *>;
 
-TargetMap& targets() {
+TargetMap &targets() {
     static TargetMap instance;
     return instance;
 }
@@ -15,10 +15,10 @@ TargetMap& targets() {
 
 TlmTarget::TlmTarget(sc_core::sc_module_name name, sc_core::sc_time response_timeout)
     : sc_module(name), socket("socket"), request_toggle("request_toggle"),
-            response_timeout_(response_timeout) {
-        if (response_timeout_ <= sc_core::SC_ZERO_TIME) {
-                throw std::invalid_argument("TLM target response timeout must be positive");
-        }
+      response_timeout_(response_timeout) {
+    if (response_timeout_ <= sc_core::SC_ZERO_TIME) {
+        throw std::invalid_argument("TLM target response timeout must be positive");
+    }
     socket.register_b_transport(this, &TlmTarget::b_transport);
 
     const std::string endpoint(this->name());
@@ -33,7 +33,7 @@ TlmTarget::~TlmTarget() {
     targets().erase(this->name());
 }
 
-bool TlmTarget::try_recv(TlmTargetRequest& request) {
+bool TlmTarget::try_recv(TlmTargetRequest &request) {
     if (requests_.empty()) {
         return false;
     }
@@ -46,12 +46,10 @@ bool TlmTarget::try_recv(TlmTargetRequest& request) {
     return true;
 }
 
-bool TlmTarget::copy_request(uint64_t id,
-                             std::vector<unsigned char>& data,
-                             std::vector<unsigned char>& byte_en) const {
+bool TlmTarget::copy_request(uint64_t id, std::vector<unsigned char> &data,
+                             std::vector<unsigned char> &byte_en) const {
     const auto pending = pending_.find(id);
-    if (pending == pending_.end() || !pending->second->delivered ||
-        pending->second->completed) {
+    if (pending == pending_.end() || !pending->second->delivered || pending->second->completed) {
         return false;
     }
     data = pending->second->request.data;
@@ -59,9 +57,7 @@ bool TlmTarget::copy_request(uint64_t id,
     return true;
 }
 
-int TlmTarget::respond(uint64_t id,
-                       const std::vector<unsigned char>& data,
-                       int response_status) {
+int TlmTarget::respond(uint64_t id, const std::vector<unsigned char> &data, int response_status) {
     const bool valid_status = response_status == tlm::TLM_OK_RESPONSE ||
                               response_status == tlm::TLM_GENERIC_ERROR_RESPONSE ||
                               response_status == tlm::TLM_ADDRESS_ERROR_RESPONSE ||
@@ -75,7 +71,7 @@ int TlmTarget::respond(uint64_t id,
     if (pending_it == pending_.end()) {
         return -2;
     }
-    const auto& pending = pending_it->second;
+    const auto &pending = pending_it->second;
     if (!pending->delivered || pending->completed) {
         return -3;
     }
@@ -86,13 +82,13 @@ int TlmTarget::respond(uint64_t id,
     return 0;
 }
 
-void TlmTarget::b_transport(tlm::tlm_generic_payload& payload, sc_core::sc_time& delay) {
+void TlmTarget::b_transport(tlm::tlm_generic_payload &payload, sc_core::sc_time &delay) {
     payload.set_dmi_allowed(false);
     const auto process = sc_core::sc_get_current_process_handle();
-    if (!process.valid() ||
-        (process.proc_kind() != sc_core::SC_THREAD_PROC_ &&
-         process.proc_kind() != sc_core::SC_CTHREAD_PROC_)) {
-        SC_REPORT_ERROR("SCVPI/TLM", "b_transport must be called from a wait-capable SystemC thread");
+    if (!process.valid() || (process.proc_kind() != sc_core::SC_THREAD_PROC_ &&
+                             process.proc_kind() != sc_core::SC_CTHREAD_PROC_)) {
+        SC_REPORT_ERROR("SCVPI/TLM",
+                        "b_transport must be called from a wait-capable SystemC thread");
         payload.set_response_status(tlm::TLM_GENERIC_ERROR_RESPONSE);
         return;
     }
@@ -176,15 +172,13 @@ void TlmTarget::publish_requests() {
     }
 }
 
-bool tlm_target_try_recv(const std::string& endpoint, TlmTargetRequest& request) {
+bool tlm_target_try_recv(const std::string &endpoint, TlmTargetRequest &request) {
     const auto target = targets().find(endpoint);
     return target != targets().end() && target->second->try_recv(request);
 }
 
-int tlm_target_respond(const std::string& endpoint,
-                       uint64_t id,
-                       const std::vector<unsigned char>& data,
-                       int response_status) {
+int tlm_target_respond(const std::string &endpoint, uint64_t id,
+                       const std::vector<unsigned char> &data, int response_status) {
     const auto target = targets().find(endpoint);
     if (target == targets().end()) {
         return -1;
@@ -195,13 +189,10 @@ int tlm_target_respond(const std::string& endpoint,
 
 } // namespace scvpi
 
-extern "C" int scvpi_tlm_target_pop_request(const char* endpoint,
-                                              uint64_t* id,
-                                              int* command,
-                                              uint64_t* address,
-                                              unsigned int* streaming_width,
-                                              unsigned int* data_length,
-                                              unsigned int* byte_enable_length) {
+extern "C" int scvpi_tlm_target_pop_request(const char *endpoint, uint64_t *id, int *command,
+                                            uint64_t *address, unsigned int *streaming_width,
+                                            unsigned int *data_length,
+                                            unsigned int *byte_enable_length) {
     if (endpoint == nullptr || id == nullptr || command == nullptr || address == nullptr ||
         streaming_width == nullptr || data_length == nullptr || byte_enable_length == nullptr) {
         return -1;
@@ -224,12 +215,9 @@ extern "C" int scvpi_tlm_target_pop_request(const char* endpoint,
     return 1;
 }
 
-extern "C" int scvpi_tlm_target_copy_request(const char* endpoint,
-                                               uint64_t id,
-                                               unsigned char* data,
-                                               unsigned int data_capacity,
-                                               unsigned char* byte_enable,
-                                               unsigned int byte_enable_capacity) {
+extern "C" int scvpi_tlm_target_copy_request(const char *endpoint, uint64_t id, unsigned char *data,
+                                             unsigned int data_capacity, unsigned char *byte_enable,
+                                             unsigned int byte_enable_capacity) {
     if (endpoint == nullptr) {
         return -1;
     }
@@ -254,17 +242,14 @@ extern "C" int scvpi_tlm_target_copy_request(const char* endpoint,
     return 0;
 }
 
-extern "C" int scvpi_tlm_target_respond(const char* endpoint,
-                                         uint64_t id,
-                                         const unsigned char* data,
-                                         unsigned int data_length,
-                                         int response_status) {
+extern "C" int scvpi_tlm_target_respond(const char *endpoint, uint64_t id,
+                                        const unsigned char *data, unsigned int data_length,
+                                        int response_status) {
     if (endpoint == nullptr || (data_length != 0 && data == nullptr)) {
         return -1;
     }
-    const std::vector<unsigned char> response = data_length == 0
-                                                   ? std::vector<unsigned char>{}
-                                                   : std::vector<unsigned char>(data,
-                                                                                data + data_length);
+    const std::vector<unsigned char> response =
+        data_length == 0 ? std::vector<unsigned char>{}
+                         : std::vector<unsigned char>(data, data + data_length);
     return scvpi::tlm_target_respond(endpoint, id, response, response_status);
 }

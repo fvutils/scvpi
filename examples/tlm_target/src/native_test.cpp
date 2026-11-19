@@ -11,8 +11,8 @@
 #include <vector>
 
 namespace {
-constexpr const char* endpoint = "top.target";
-constexpr const char* timeout_endpoint = "top.timeout_target";
+constexpr const char *endpoint = "top.target";
+constexpr const char *timeout_endpoint = "top.timeout_target";
 constexpr uint64_t write_addr = UINT64_C(0xfedcba9876543210);
 constexpr uint64_t read_addr = UINT64_C(0x8123456789abcdef);
 constexpr uint64_t ignore_addr = 0x30;
@@ -23,14 +23,12 @@ constexpr uint64_t concurrent_base = 0x200;
 const std::array<unsigned char, 5> write_data{{0x00, 0x80, 0xff, 0x42, 0x00}};
 const std::array<unsigned char, 3> byte_en{{0xff, 0x00, 0x80}};
 const std::array<unsigned char, 5> read_data{{0xff, 0x00, 0x81, 0x00, 0x7f}};
-const std::array<int, 5> errors{{tlm::TLM_GENERIC_ERROR_RESPONSE,
-                                 tlm::TLM_ADDRESS_ERROR_RESPONSE,
-                                 tlm::TLM_COMMAND_ERROR_RESPONSE,
-                                 tlm::TLM_BURST_ERROR_RESPONSE,
+const std::array<int, 5> errors{{tlm::TLM_GENERIC_ERROR_RESPONSE, tlm::TLM_ADDRESS_ERROR_RESPONSE,
+                                 tlm::TLM_COMMAND_ERROR_RESPONSE, tlm::TLM_BURST_ERROR_RESPONSE,
                                  tlm::TLM_BYTE_ENABLE_ERROR_RESPONSE}};
 
 unsigned int checks = 0;
-void check(bool condition, const char* expression, int line) {
+void check(bool condition, const char *expression, int line) {
     ++checks;
     if (!condition) {
         const std::string message = std::string("line ") + std::to_string(line) + ": " + expression;
@@ -48,9 +46,9 @@ struct Request {
     unsigned int byte_length = 0;
 };
 
-int pop(const char* name, Request& r) {
-    return scvpi_tlm_target_pop_request(name, &r.id, &r.command, &r.address,
-                                        &r.width, &r.length, &r.byte_length);
+int pop(const char *name, Request &r) {
+    return scvpi_tlm_target_pop_request(name, &r.id, &r.command, &r.address, &r.width, &r.length,
+                                        &r.byte_length);
 }
 } // namespace
 
@@ -71,8 +69,8 @@ SC_MODULE(Top) {
     SC_CTOR(Top)
         : target("target", sc_core::sc_time(100, sc_core::SC_NS)),
           timeout_target("timeout_target", sc_core::sc_time(20, sc_core::SC_NS)),
-                    initiator("initiator"), timeout_initiator("timeout_initiator") {
-                // Multiple caller threads can share this bound initiator socket.
+          initiator("initiator"), timeout_initiator("timeout_initiator") {
+        // Multiple caller threads can share this bound initiator socket.
         initiator.bind(target.socket);
         timeout_initiator.bind(timeout_target.socket);
         SC_THREAD(responder);
@@ -104,7 +102,7 @@ SC_MODULE(Top) {
             CHECK(pop(endpoint, unavailable) == 0);
             std::vector<unsigned char> data(r.length), enables(r.byte_length);
             CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, data.data(), r.length,
-                                                 enables.data(), r.byte_length) == 0);
+                                                enables.data(), r.byte_length) == 0);
 
             if (r.address == write_addr) {
                 CHECK(r.command == tlm::TLM_WRITE_COMMAND);
@@ -113,24 +111,28 @@ SC_MODULE(Top) {
                 CHECK(std::vector<unsigned char>(write_data.begin(), write_data.end()) == data);
                 CHECK(std::vector<unsigned char>(byte_en.begin(), byte_en.end()) == enables);
                 CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, data.data(), r.length - 1,
-                                                     enables.data(), r.byte_length) == -3);
+                                                    enables.data(), r.byte_length) == -3);
                 CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, data.data(), r.length,
-                                                     enables.data(), r.byte_length - 1) == -3);
+                                                    enables.data(), r.byte_length - 1) == -3);
                 CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, nullptr, r.length,
-                                                     enables.data(), r.byte_length) == -3);
-                CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, data.data(), r.length,
-                                                     nullptr, r.byte_length) == -3);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 1, tlm::TLM_OK_RESPONSE) == -1);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_INCOMPLETE_RESPONSE) == -4);
+                                                    enables.data(), r.byte_length) == -3);
+                CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, data.data(), r.length, nullptr,
+                                                    r.byte_length) == -3);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 1, tlm::TLM_OK_RESPONSE) ==
+                      -1);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0,
+                                               tlm::TLM_INCOMPLETE_RESPONSE) == -4);
                 CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, 12345) == -4);
                 CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, -99) == -4);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id + 100000, nullptr, 0, tlm::TLM_OK_RESPONSE) == -2);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id + 100000, nullptr, 0,
+                                               tlm::TLM_OK_RESPONSE) == -2);
                 // Even a nonempty response must not overwrite a WRITE buffer.
                 CHECK(scvpi_tlm_target_respond(endpoint, r.id, read_data.data(), read_data.size(),
-                                                tlm::TLM_OK_RESPONSE) == 0);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_OK_RESPONSE) == -3);
+                                               tlm::TLM_OK_RESPONSE) == 0);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_OK_RESPONSE) ==
+                      -3);
                 CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, data.data(), r.length,
-                                                     enables.data(), r.byte_length) == -2);
+                                                    enables.data(), r.byte_length) == -2);
             } else if (r.address == read_addr) {
                 CHECK(r.command == tlm::TLM_READ_COMMAND && r.width == 3);
                 CHECK(sc_core::sc_time_stamp() == expected_read_arrival);
@@ -138,24 +140,25 @@ SC_MODULE(Top) {
                 CHECK(enables == std::vector<unsigned char>(byte_en.begin(), byte_en.end()));
                 wait(sc_core::sc_time(3, sc_core::SC_NS));
                 CHECK(scvpi_tlm_target_respond(endpoint, r.id, read_data.data(), read_data.size(),
-                                                tlm::TLM_OK_RESPONSE) == 0);
+                                               tlm::TLM_OK_RESPONSE) == 0);
             } else if (r.address == ignore_addr) {
                 CHECK(r.command == tlm::TLM_IGNORE_COMMAND && r.width == 1);
                 CHECK(data == std::vector<unsigned char>(write_data.begin(), write_data.end()));
                 CHECK(scvpi_tlm_target_respond(endpoint, r.id, read_data.data(), read_data.size(),
-                                                tlm::TLM_OK_RESPONSE) == 0);
+                                               tlm::TLM_OK_RESPONSE) == 0);
             } else if (r.address == mismatch_addr) {
                 CHECK(r.command == tlm::TLM_READ_COMMAND);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id, read_data.data(), read_data.size() - 1,
-                                                tlm::TLM_OK_RESPONSE) == 0);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id, read_data.data(),
+                                               read_data.size() - 1, tlm::TLM_OK_RESPONSE) == 0);
             } else if (r.address == empty_addr) {
                 CHECK(r.command == tlm::TLM_READ_COMMAND && r.length == 0 && r.byte_length == 0);
                 CHECK(scvpi_tlm_target_copy_request(endpoint, r.id, nullptr, 0, nullptr, 0) == 0);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_OK_RESPONSE) == 0);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_OK_RESPONSE) ==
+                      0);
             } else if (r.address >= error_base && r.address < error_base + errors.size()) {
                 CHECK(r.command == tlm::TLM_READ_COMMAND);
                 CHECK(scvpi_tlm_target_respond(endpoint, r.id, read_data.data(), read_data.size(),
-                                                errors[r.address - error_base]) == 0);
+                                               errors[r.address - error_base]) == 0);
             } else {
                 CHECK(r.address == concurrent_base || r.address == concurrent_base + 1);
                 CHECK(r.command == tlm::TLM_WRITE_COMMAND);
@@ -164,7 +167,8 @@ SC_MODULE(Top) {
                 wait(sc_core::sc_time(4, sc_core::SC_NS));
                 CHECK(started == 2 && completed == concurrent_order.size() - 1);
                 CHECK(pop(endpoint, unavailable) == 0);
-                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_OK_RESPONSE) == 0);
+                CHECK(scvpi_tlm_target_respond(endpoint, r.id, nullptr, 0, tlm::TLM_OK_RESPONSE) ==
+                      0);
             }
         }
     }
@@ -195,15 +199,19 @@ SC_MODULE(Top) {
         ++completed;
         concurrent_done.notify(sc_core::SC_ZERO_TIME);
     }
-    void caller1() { concurrent_call(concurrent_base); }
-    void caller2() { concurrent_call(concurrent_base + 1); }
+    void caller1() {
+        concurrent_call(concurrent_base);
+    }
+    void caller2() {
+        concurrent_call(concurrent_base + 1);
+    }
 
     void run() {
         Request r;
         CHECK(pop("top.missing", r) == -1);
         CHECK(pop(nullptr, r) == -1);
-        CHECK(scvpi_tlm_target_pop_request(endpoint, nullptr, &r.command, &r.address,
-                                            &r.width, &r.length, &r.byte_length) == -1);
+        CHECK(scvpi_tlm_target_pop_request(endpoint, nullptr, &r.command, &r.address, &r.width,
+                                           &r.length, &r.byte_length) == -1);
         CHECK(scvpi_tlm_target_copy_request(nullptr, 1, nullptr, 0, nullptr, 0) == -1);
         CHECK(scvpi_tlm_target_copy_request("top.missing", 1, nullptr, 0, nullptr, 0) == -2);
         CHECK(scvpi_tlm_target_copy_request(endpoint, 99999, nullptr, 0, nullptr, 0) == -2);
@@ -296,7 +304,8 @@ SC_MODULE(Top) {
 
         const auto concurrent_start = sc_core::sc_time_stamp();
         start_concurrent.notify(sc_core::SC_ZERO_TIME);
-        while (completed != 2) wait(concurrent_done);
+        while (completed != 2)
+            wait(concurrent_done);
         CHECK(concurrent_order.size() == 2 && concurrent_order[0] != concurrent_order[1]);
         CHECK(sc_core::sc_time_stamp() - concurrent_start == sc_core::sc_time(8, sc_core::SC_NS));
         ++scenarios;
@@ -314,8 +323,10 @@ SC_MODULE(Top) {
         CHECK(sc_core::sc_time_stamp() - timeout_start == sc_core::sc_time(20, sc_core::SC_NS));
         CHECK(timeout_payload.get_response_status() == tlm::TLM_GENERIC_ERROR_RESPONSE);
         CHECK(!timeout_payload.is_dmi_allowed() && timeout_data == 0x80 && timeout_id != 0);
-        CHECK(scvpi_tlm_target_respond(timeout_endpoint, timeout_id, nullptr, 0, tlm::TLM_OK_RESPONSE) == -2);
-        CHECK(scvpi_tlm_target_copy_request(timeout_endpoint, timeout_id, nullptr, 0, nullptr, 0) == -2);
+        CHECK(scvpi_tlm_target_respond(timeout_endpoint, timeout_id, nullptr, 0,
+                                       tlm::TLM_OK_RESPONSE) == -2);
+        CHECK(scvpi_tlm_target_copy_request(timeout_endpoint, timeout_id, nullptr, 0, nullptr, 0) ==
+              -2);
         CHECK(pop(timeout_endpoint, r) == 0);
         ++scenarios;
 
@@ -325,11 +336,12 @@ SC_MODULE(Top) {
     }
 };
 
-int sc_main(int, char**) {
+int sc_main(int, char **) {
     Top top("top");
     sc_core::sc_start(sc_core::sc_time(1, sc_core::SC_US));
     if (!top.success) {
-        std::cerr << "FAIL: simulation stopped or watchdog expired before all scenarios completed\n";
+        std::cerr
+            << "FAIL: simulation stopped or watchdog expired before all scenarios completed\n";
         return 1;
     }
     return 0;
